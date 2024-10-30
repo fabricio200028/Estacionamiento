@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Estacionamiento</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles/index.css">
 </head>
 <body>
-    <h1>Gestión de Estacionamiento</h1>
+    <header>
+        <h1 class="logo">Gestión de Estacionamiento</h1>
+    </header>
 
     <!-- Formulario para registrar la entrada de un vehículo -->
     <section>
@@ -20,9 +22,13 @@
                 <label for="tipo_vehiculo">Tipo de Vehículo:</label>
                 <select id="tipo_vehiculo" name="tipo_vehiculo" required>
                     <option value="">Seleccionar</option>
-                    <% tarifas.forEach(function(tarifa) { %>
-                        <option value="<%= tarifa.tipo_vehiculo %>"><%= tarifa.tipo_vehiculo %></option>
-                    <% }); %>
+                    <% if (typeof tarifas !== 'undefined' && tarifas.length > 0) { %>
+                        <% tarifas.forEach(function(tarifa) { %>
+                            <option value="<%= tarifa.tipo_vehiculo %>"><%= tarifa.tipo_vehiculo %></option>
+                        <% }); %>
+                    <% } else { %>
+                        <option value="">No hay tipos de vehículo disponibles</option>
+                    <% } %>
                 </select>
             </div>
             <div>
@@ -33,9 +39,13 @@
                 <label for="espacio_id">Espacio de Estacionamiento:</label>
                 <select id="espacio_id" name="espacio_id" required>
                     <option value="">Seleccionar</option>
-                    <% espaciosDisponibles.forEach(function(espacio) { %>
-                        <option value="<%= espacio.espacio_id %>"><%= espacio.numero_espacio %></option>
-                    <% }); %>
+                    <% if (typeof espaciosDisponibles !== 'undefined' && espaciosDisponibles.length > 0) { %>
+                        <% espaciosDisponibles.forEach(function(espacio) { %>
+                            <option value="<%= espacio.espacio_id %>"><%= espacio.numero_espacio %></option>
+                        <% }); %>
+                    <% } else { %>
+                        <option value="">No hay espacios disponibles</option>
+                    <% } %>
                 </select>
             </div>
             <button type="submit">Registrar Entrada</button>
@@ -65,12 +75,18 @@
                 </tr>
             </thead>
             <tbody>
-                <% espaciosEstacionamiento.forEach(function(espacio) { %>
+                <% if (typeof espaciosEstacionamiento !== 'undefined' && espaciosEstacionamiento.length > 0) { %>
+                    <% espaciosEstacionamiento.forEach(function(espacio) { %>
+                        <tr>
+                            <td><%= espacio.numero_espacio %></td>
+                            <td><%= espacio.estado %></td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
                     <tr>
-                        <td><%= espacio.numero_espacio %></td>
-                        <td><%= espacio.estado %></td>
+                        <td colspan="2">No hay espacios de estacionamiento disponibles</td>
                     </tr>
-                <% }); %>
+                <% } %>
             </tbody>
         </table>
     </section>
@@ -86,7 +102,7 @@
             <button type="submit">Ver Historial</button>
         </form>
 
-        <% if (historialMovimientos && historialMovimientos.length > 0) { %>
+        <% if (typeof historialMovimientos !== 'undefined' && historialMovimientos.length > 0) { %>
             <h3>Movimientos para la matrícula: <%= historialMatricula %></h3>
             <table border="1">
                 <thead>
@@ -113,5 +129,8 @@
         <% } %>
     </section>
 
+    <footer>
+        <p>Gestión de Estacionamiento - Todos los derechos reservados</p>
+    </footer>
 </body>
 </html>
