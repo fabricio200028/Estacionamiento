@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express'); //estas lineas hace q el css funcione//
 const path = require('path');
 const app = express();
 
