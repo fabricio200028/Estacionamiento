@@ -11,5 +11,8 @@ router.get("/delete/:id", deleteCustomer);
 router.get("/update/:id", editCustomer);
 router.post("/update/:id", updateCustomer);
 
+router.get("/index", (req, res)=>{
+    res.render('index')
+})
 
 export default router
