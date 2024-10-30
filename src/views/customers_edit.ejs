@@ -1,0 +1,45 @@
+<%- include("partials/_header") %>
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-5 offset-md-3 card bg-dark">
+      <div class="card-body">
+        <form action="/update/<%= customer.id %>" method="POST">
+          <input
+            type="text"
+            name="name"
+            value="<%= customer.nombre %>"
+            placeholder="Name"
+            class="form-control mb-3"
+            autofocus
+          />
+          <input
+            type="list"
+            name="Destino"
+            value="<%= customer.Destino>"
+            placeholder="Address"
+            class="form-control mb-2"
+          />
+          <input
+            type="date"
+            name="Fecha de Ida"
+            value="<%= customer.fechaida>"
+            placeholder="fechaida"
+            class="form-control mb-2"
+          />
+          <input
+            type="date"
+            name="Fecha de Vuelta"
+            value="<%= customer.fechavuelta>"
+            placeholder="fechavuelta"
+            class="form-control mb-2"
+          />
+
+          <button type="submit" class="btn btn-primary">Actualizar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("partials/_footer") %>
