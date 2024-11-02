@@ -8,16 +8,12 @@ body {
 
 /* Encabezado */
 header {
-  background-color: #007bff;
   color: white;
-  padding: 20px;
+  padding: 2%;
   text-align: center;
-}
-
-header .logo h1 {
-  margin: 0;
-  font-size: 75px;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+/*CSS GRADIENT*/
+background: rgb(2,0,36);
+background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
 }
 
 /* Pie de página */
@@ -28,10 +24,15 @@ footer {
   padding: 10px;
 }
 
+/* Atributos globales */
 
 .margen_1 {
 margin: 1%;
 }
+
+.margentop_1 {
+  margin-top: 1%;
+  }
 
 /**********SECCION DE REGISTRO************/
 

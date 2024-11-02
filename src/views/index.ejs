@@ -17,12 +17,12 @@
         <h2>Registrar Entrada de Vehículo</h2>
         <form action="/entrada" method="POST">
             <div>
-                <label for="matricula">Matrícula:</label>
-                <input type="text" id="matricula" name="matricula" required>
+                <label for="matricula">Matrícula:</label><br/>
+                <input class="margen_1" type="text" id="matricula" name="matricula" required>
             </div>
             <div>
-                <label for="tipo_vehiculo">Tipo de Vehículo:</label>
-                <select id="tipo_vehiculo" name="tipo_vehiculo" required>
+                <label for="tipo_vehiculo">Tipo de Vehículo:</label><br/>
+                <select class="margen_1" id="tipo_vehiculo" name="tipo_vehiculo" required>
                     <option value="">Seleccionar</option>
                     <% if (typeof tarifas !== 'undefined' && tarifas.length > 0) { %>
                         <% tarifas.forEach(function(tarifa) { %>
@@ -34,12 +34,12 @@
                 </select>
             </div>
             <div>
-                <label for="nombre_propietario">Nombre del Propietario:</label>
-                <input type="text" id="nombre_propietario" name="nombre_propietario" required>
+                <label for="nombre_propietario">Nombre del Propietario:</label><br/>
+                <input class="margen_1" type="text" id="nombre_propietario" name="nombre_propietario" required>
             </div>
             <div>
-                <label for="espacio_id">Espacio de Estacionamiento:</label>
-                <select id="espacio_id" name="espacio_id" required>
+                <label for="espacio_id">Espacio de Estacionamiento:</label><br/>
+                <select class="margen_1"id="espacio_id" name="espacio_id" required>
                     <option value="">Seleccionar</option>
                     <% if (typeof espaciosDisponibles !== 'undefined' && espaciosDisponibles.length > 0) { %>
                         <% espaciosDisponibles.forEach(function(espacio) { %>
@@ -50,7 +50,7 @@
                     <% } %>
                 </select>
             </div>
-            <button type="submit">Registrar Entrada</button>
+            <button class="margen_1" type="submit">Registrar Entrada</button>
         </form>
     </section>
 
@@ -59,10 +59,10 @@
         <h2>Registrar Salida de Vehículo</h2>
         <form action="/salida" method="POST">
             <div>
-                <label for="matricula_salida">Matrícula:</label>
-                <input type="text" id="matricula_salida" name="matricula" required>
+                <label for="matricula_salida">Matrícula:</label><br/>
+                <input class="margen_1" type="text" id="matricula_salida" name="matricula" required>
             </div>
-            <button type="submit">Registrar Salida</button>
+            <button class="margen_1" type="submit">Registrar Salida</button>
         </form>
     </section>
 
@@ -99,9 +99,9 @@
         <form action="/historial" method="GET">
             <div>
                 <label for="matricula_historial">Matrícula:</label>
-                <input type="text" id="matricula_historial" name="matricula" required>
+                <input type="text" id="matricula_historial" name="matricula" required><br/>
             </div>
-            <button type="submit">Ver Historial</button>
+            <button class="margen_1" type="submit">Ver Historial</button>
         </form>
 
         <% if (typeof historialMovimientos !== 'undefined' && historialMovimientos.length > 0) { %>
