@@ -8,6 +8,7 @@ body {
 
 /* Encabezado */
 header {
+  
   color: white;
   padding: 2%;
   text-align: center;
@@ -31,6 +32,7 @@ margin: 1%;
 border-radius: 5px;
 border: solid 1px #ccc;
 font-family: inter;
+
 }
 
 input{
@@ -39,8 +41,8 @@ outline:none;
 padding: 8px;
 }
 
-option{
-  padding: 0%;
+select{
+  padding: 8px;
   
 }
 h2{
