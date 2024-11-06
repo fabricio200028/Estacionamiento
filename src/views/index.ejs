@@ -5,6 +5,9 @@
     <title>Gestión de Estacionamiento</title>
     <link rel="stylesheet" href="/styles/index.css">
     <link rel="icon" href="../public/imagenes/logo.png" type="image/png" >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -25,6 +28,9 @@
                 <label for="tipo_vehiculo">Tipo de Vehículo:</label><br/>
                 <select class="margen_1" id="tipo_vehiculo" name="tipo_vehiculo" required>
                     <option value="">Seleccionar</option>
+                    <option>Automovil</option>
+                    <option>Camioneta</option>
+                    <option>Moto</option>
                     <% if (typeof tarifas !== 'undefined' && tarifas.length > 0) { %>
                         <% tarifas.forEach(function(tarifa) { %>
                             <option value="<%= tarifa.tipo_vehiculo %>"><%= tarifa.tipo_vehiculo %></option>

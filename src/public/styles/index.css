@@ -1,6 +1,6 @@
 /* Estilos globales */
 body {
-  font-family: Arial, sans-serif;
+  font-family: inter;
   margin: 0;
   padding: 0px;
   background-color: #f2f2f2;
@@ -28,8 +28,25 @@ footer {
 
 .margen_1 {
 margin: 1%;
+border-radius: 5px;
+border: solid 1px #ccc;
+font-family: inter;
 }
 
+input{
+border: 10px;
+outline:none;
+padding: 8px;
+}
+
+option{
+  padding: 0%;
+  
+}
+h2{
+  color: rgba(9,9,121,1);
+  font-family: inter;
+}
 .margentop_1 {
   margin-top: 1%;
   }
