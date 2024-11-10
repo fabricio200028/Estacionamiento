@@ -7,48 +7,44 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { pool } from './db.js';
 
-
-//import rutas
+// Importar rutas
 import customerRouter from "./router/customer.routes.js";
 import authRouter from "./router/auth.routes.js";
 
-const app = express()
+const app = express();
 
-//cargar las variables de entorno
+// Cargar las variables de entorno
 dotenv.config();
 
-//Obtener el nombre de los archivos actuales y su dirección
+// Obtener el nombre de los archivos actuales y su dirección
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename) 
+const __dirname = dirname(__filename);
 
-//setting
-app.set('port', process.env.PORT || 3000); // uso .env en el port
+// Configuración de la app
+app.set('port', process.env.PORT || 3000);
 app.set('view engine', 'ejs');
-app.set('views', join(__dirname, 'views'))
+app.set('views', join(__dirname, 'views'));
 
-//Configuración base de datos
+// Configuración de la base de datos
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root', 
     password: '',
     database: 'parking_db'
-})
+});
 
-//middlerware
+// Middleware
 app.use(morgan('dev'));
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: false }));
 
-// static files
+// Archivos estáticos
 app.use(express.static(join(__dirname, "public")));
 
-//Router
+// Usar las rutas
 app.use(customerRouter);
 app.use(authRouter);
 
-
-// Servidor
+// Iniciar el servidor
 app.listen(app.get('port'), () => {
     console.log(`Server on port ${app.get('port')}`);
-})
-
-
+});

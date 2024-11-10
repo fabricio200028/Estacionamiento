@@ -1,22 +1,3 @@
-/* Estilos globales */
-body {
-  font-family: inter;
-  margin: 0;
-  padding: 0px;
-  background-color: #f2f2f2;
-}
-
-/* Encabezado */
-header {
-  
-  color: white;
-  padding: 2%;
-  text-align: center;
-/*CSS GRADIENT*/
-background: rgb(2,0,36);
-background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
-}
-
 /* Pie de página */
 footer {
   background-color: #343a40;
@@ -25,56 +6,5 @@ footer {
   padding: 10px;
 }
 
-/* Atributos globales */
 
-.margen_1 {
-margin: 1%;
-border-radius: 5px;
-border: solid 1px #ccc;
-font-family: inter;
 
-}
-
-input{
-border: 10px;
-outline:none;
-padding: 8px;
-}
-
-select{
-  padding: 8px;
-  
-}
-h2{
-  color: rgba(9,9,121,1);
-  font-family: inter;
-}
-.margentop_1 {
-  margin-top: 1%;
-  }
-
-/**********SECCION DE REGISTRO************/
-
-/* Estilo para el botón de inicio de sesión */
-.login-circle {
-  position: fixed;
-  bottom: 20px; /* Ajusta la distancia desde el fondo */
-  right: 20px; /* Ajusta la distancia desde la derecha */
-  width: 60px; /* Ancho del círculo */
-  height: 60px; /* Alto del círculo */
-  background-color: #007bff;
-  border-radius: 50%; /* Hace que el elemento sea un círculo */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white-color);
-  font-size: 1.5em;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s, transform 0.3s;
-}
-
-.login-circle:hover {
-  background-color: var(--primary-color-dark);
-  transform: scale(1.1); /* Efecto de aumento al pasar el mouse */
-}
