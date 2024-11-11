@@ -8,7 +8,7 @@ export const authLogin = async (req, res) => {
 
     try {
         // Consulta a la base de datos para verificar las credenciales
-        const [users] = await pool.query('SELECT * FROM users WHERE Gmail = ? AND username = ? AND password = ?', [Gmail, username, password]);
+        const [users] = await pool.query('SELECT * FROM usuarios WHERE nombre_usuario = ? AND password = ?', [username, password]);
 
         if (users.length > 0) {
             // Si el usuario existe y las credenciales son correctas
@@ -36,7 +36,7 @@ export const registerUser = async (req, res) => {
 
     try {
         // Guardar el usuario en la base de datos
-        const [rows] = await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, password]);
+        const [rows] = await pool.query('INSERT INTO usuarios (username, password) VALUES (?, ?)', [username, password]);
         // Responder con éxito
         return res.redirect('/customers');
     } catch (error) {
