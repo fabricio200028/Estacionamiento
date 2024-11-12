@@ -1,0 +1,25 @@
+<!-- views/receipt.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprobante de Salida</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <h1>Comprobante de Salida</h1>
+    <p><strong>Usuario:</strong> <%= record.username %></p>
+    <p><strong>Placa del Vehículo:</strong> <%= record.licensePlate %></p>
+    <p><strong>Hora de Entrada:</strong> <%= record.entryTime.toLocaleString() %></p>
+    <p><strong>Hora de Salida:</strong> <%= record.exitTime.toLocaleString() %></p>
+    <p><strong>Duración:</strong> <%= Math.ceil((record.exitTime - record.entryTime) / (1000 * 60 * 60)) %> horas</p>
+    <p><strong>Monto a Pagar:</strong> $<%= record.amount %></p>
+    <button onclick="printReceipt()">Imprimir Comprobante</button>
+    <p><a href="/dashboard">Volver</a></p>
+    <script>
+        function printReceipt() {
+            window.print(); // Esta función abre el diálogo de impresión del navegador
+        }
+    </script>
+</body>
+</html>
