@@ -1,0 +1,22 @@
+<!-- views/editar-registro.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Registro</title>
+</head>
+<body>
+    <h1>Editar Registro</h1>
+    <form action="/admin/editar-registro/<%= registro.id %>" method="POST">
+        <label for="hora_entrada">Hora de Entrada:</label><br>
+        <input type="datetime-local" id="hora_entrada" name="hora_entrada" value="<%= registro.hora_entrada.toISOString().slice(0,16) %>" required><br><br>
+
+        <label for="hora_salida">Hora de Salida:</label><br>
+        <input type="datetime-local" id="hora_salida" name="hora_salida" value="<%= registro.hora_salida ? registro.hora_salida.toISOString().slice(0,16) : '' %>"><br><br>
+
+        <button type="submit">Actualizar Registro</button>
+    </form>
+    <br>
+    <a href="/admin">Volver al Panel de Administración</a>
+</body>
+</html>

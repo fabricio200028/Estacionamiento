@@ -1,0 +1,16 @@
+<!-- views/comprobante.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprobante de Pago</title>
+</head>
+<body>
+    <h1>Comprobante de Pago</h1>
+    <p><strong>Hora de Entrada:</strong> <%= hora_entrada %></p>
+    <p><strong>Hora de Salida:</strong> <%= hora_salida %></p>
+    <p><strong>Monto a Pagar:</strong> $<%= monto.toFixed(2) %></p>
+    <br>
+    <a href="/inicio">Volver al Inicio</a>
+</body>
+</html>
