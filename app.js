@@ -187,29 +187,86 @@ app.get('/cliente', verificarAutenticacion, (req, res) => {
   }
 });
 
-// Ruta POST para registrar la salida y generar el comprobante
-app.post('/registrar-salida', verificarAutenticacion, (req, res) => {
-  const { id_registro } = req.body;
-  const hora_salida = new Date();
 
-  db.query('SELECT hora_entrada FROM registros WHERE id = ?', [id_registro], (err, results) => {
-    if (err) throw err;
-    if (results.length > 0) {
-      const hora_entrada = new Date(results[0].hora_entrada);
-      const tiempoEstadia = (hora_salida - hora_entrada) / (1000 * 60 * 60); // Horas
-      const monto = calcularMonto(tiempoEstadia);
+// Ruta GET para mostrar el comprobante al cliente en formato PDF
+const easyinvoice = require('easyinvoice');
 
-      db.query('UPDATE registros SET hora_salida = ?, monto = ? WHERE id = ?',
-        [hora_salida, monto, id_registro],
-        (err, result) => {
-          if (err) throw err;
-          res.render('comprobante', { hora_entrada, hora_salida, monto });
-        });
-    } else {
-      res.send('Registro no encontrado');
-    }
-  });
+
+app.get('/cliente/comprobante/:id', verificarAutenticacion, (req, res) => {
+    const id_registro = req.params.id;
+
+    db.query('SELECT * FROM registros WHERE id = ? AND id_usuario = ?', [id_registro, req.session.usuario.id], async (err, results) => {
+        if (err) {
+            console.error('Error al consultar la base de datos:', err);
+            res.status(500).send('Error interno del servidor');
+            return;
+        }
+        if (results.length > 0) {
+            const registro = results[0];
+            if (registro.hora_salida) {
+                const hora_entrada = new Date(registro.hora_entrada);
+                const hora_salida = new Date(registro.hora_salida);
+                const monto = registro.monto;
+                const nombre_usuario = req.session.usuario.nombre;
+
+                // Preparar los datos para la factura
+                const data = {
+                    "documentTitle": "Comprobante de Pago",
+                    "currency": "USD",
+                    "taxNotation": "vat", // o "gst"
+                    "marginTop": 25,
+                    "marginRight": 25,
+                    "marginLeft": 25,
+                    "marginBottom": 25,
+                    "logo": "", // Puedes agregar la URL de tu logo aquí
+                    "sender": {
+                        "company": "Estacionamiento XYZ",
+                        "address": "Calle Principal 123",
+                        "zip": "1000",
+                        "city": "Ciudad",
+                        "country": "País"
+                    },
+                    "client": {
+                        "company": nombre_usuario,
+                        "address": "",
+                        "zip": "",
+                        "city": "",
+                        "country": ""
+                    },
+                    "invoiceNumber": registro.id.toString(),
+                    "invoiceDate": hora_salida.toISOString().split('T')[0],
+                    "products": [
+                        {
+                            "quantity": 1,
+                            "description": "Servicio de Estacionamiento",
+                            "tax": 0,
+                            "price": monto
+                        }
+                    ],
+                    "bottomNotice": "Gracias por utilizar nuestros servicios."
+                };
+
+                try {
+                    // Generar el PDF
+                    const result = await easyinvoice.createInvoice(data);
+                    // Enviar el PDF al cliente
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Content-Disposition', `attachment; filename=comprobante_${registro.id}.pdf`);
+                    res.send(Buffer.from(result.pdf, 'base64'));
+                } catch (error) {
+                    console.error('Error al generar el comprobante:', error);
+                    res.status(500).send('Error al generar el comprobante.');
+                }
+            } else {
+                res.send('La salida aún no ha sido registrada para este registro.');
+            }
+        } else {
+            res.send('Registro no encontrado.');
+        }
+    });
 });
+
+
 
 function calcularMonto(tiempoEstadia) {
   const tarifaPorHora = 5; // Por ejemplo, $5 por hora

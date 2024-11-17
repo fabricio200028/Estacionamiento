@@ -7,10 +7,17 @@
 </head>
 <body>
     <h1>Comprobante de Pago</h1>
+    <p><strong>Nombre del Cliente:</strong> <%= nombre_usuario %></p>
     <p><strong>Hora de Entrada:</strong> <%= hora_entrada %></p>
     <p><strong>Hora de Salida:</strong> <%= hora_salida %></p>
     <p><strong>Monto a Pagar:</strong> $<%= monto.toFixed(2) %></p>
     <br>
-    <a href="/inicio">Volver al Inicio</a>
+    <% if (usuario && usuario.tipo_usuario === 'admin') { %>
+        <a href="/admin">Volver al Panel de Administración</a>
+    <% } else { %>
+        <a href="/cliente">Ver Mis Registros</a>
+    <% } %>
+    <br><br>
+    <a href="/logout">Cerrar Sesión</a>
 </body>
 </html>

@@ -39,6 +39,13 @@
                 <td><%= registro.hora_entrada %></td>
                 <td><%= registro.hora_salida %></td>
                 <td><%= registro.monto %></td>
+                <td>
+                  <% if (registro.hora_salida) { %>
+                      <a href="/cliente/comprobante/<%= registro.id %>">Descargar Comprobante (PDF)</a>
+                  <% } else { %>
+                      Pendiente
+                  <% } %>
+              </td>
             </tr>
         <% }); %>
     </table>
