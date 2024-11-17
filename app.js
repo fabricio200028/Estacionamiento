@@ -212,7 +212,7 @@ app.get('/cliente/comprobante/:id', verificarAutenticacion, (req, res) => {
                 // Preparar los datos para la factura
                 const data = {
                     "documentTitle": "Comprobante de Pago",
-                    "currency": "USD",
+                    "currency": "ARS",
                     "taxNotation": "vat", // o "gst"
                     "marginTop": 25,
                     "marginRight": 25,
@@ -220,18 +220,18 @@ app.get('/cliente/comprobante/:id', verificarAutenticacion, (req, res) => {
                     "marginBottom": 25,
                     "logo": "", // Puedes agregar la URL de tu logo aquí
                     "sender": {
-                        "company": "Estacionamiento XYZ",
-                        "address": "Calle Principal 123",
-                        "zip": "1000",
-                        "city": "Ciudad",
-                        "country": "País"
+                        "company": "PARKING PLUS",
+                        "address": "Av. San Martín 2458",
+                        "zip": "CP 5500",
+                        "city": "Mendoza - Ciudad",
+                        "country": "Argentina"
                     },
                     "client": {
                         "company": nombre_usuario,
                         "address": "",
                         "zip": "",
-                        "city": "",
-                        "country": ""
+                        "city": "Mendoza",
+                        "country": "Argentina"
                     },
                     "invoiceNumber": registro.id.toString(),
                     "invoiceDate": hora_salida.toISOString().split('T')[0],
