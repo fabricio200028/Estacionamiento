@@ -266,13 +266,6 @@ app.get('/cliente/comprobante/:id', verificarAutenticacion, (req, res) => {
     });
 });
 
-
-
-function calcularMonto(tiempoEstadia) {
-  const tarifaPorHora = 5; // Por ejemplo, $5 por hora
-  return tarifaPorHora * Math.ceil(tiempoEstadia);
-}
-
 // Cerrar sesión
 app.get('/logout', (req, res) => {
   req.session.destroy();
@@ -311,7 +304,7 @@ app.post('/admin/registrar-salida', verificarAdmin, (req, res) => {
 });
 
 function calcularMonto(tiempoEstadia) {
-  const tarifaPorHora = 5; // Por ejemplo, $5 por hora
+  const tarifaPorHora = 2000; 
   return tarifaPorHora * Math.ceil(tiempoEstadia);
 }
 
