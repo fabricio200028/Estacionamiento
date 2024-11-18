@@ -218,7 +218,7 @@ app.get('/cliente/comprobante/:id', verificarAutenticacion, (req, res) => {
                     "marginRight": 25,
                     "marginLeft": 25,
                     "marginBottom": 25,
-                    "logo": "", // Puedes agregar la URL de tu logo aquí
+                    "logo": "",
                     "sender": {
                         "company": "PARKING PLUS",
                         "address": "Av. San Martín 2458",
@@ -314,3 +314,5 @@ function calcularMonto(tiempoEstadia) {
   const tarifaPorHora = 5; // Por ejemplo, $5 por hora
   return tarifaPorHora * Math.ceil(tiempoEstadia);
 }
+
+
