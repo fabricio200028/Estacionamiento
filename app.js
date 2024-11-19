@@ -248,7 +248,7 @@ app.get('/cliente/comprobante/:id', verificarAutenticacion, async (req, res) => 
                         "marginRight": 25,
                         "marginLeft": 25,
                         "marginBottom": 25,
-                        "logo": "https://public.budgetinvoice.com/img/logo_en_original.png", // Si tienes un logo, puedes agregar la URL aquí
+                        "logo": "./public/logocompleto.png", // Si tienes un logo, puedes agregar la URL aquí
                         "sender": {
                             "company": "PARKING PLUS",
                             "address": "Av. San Martín 2458",
