@@ -7,12 +7,13 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
+const easyinvoice = require('easyinvoice');
 
 // Configuración de la conexión a la base de datos
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',       // Reemplaza con tu usuario de MySQL
-  password: '', // Reemplaza con tu contraseña de MySQL
+  password: '',       // Reemplaza con tu contraseña de MySQL
   database: 'estacionamiento'
 });
 
@@ -35,7 +36,6 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Servir archivos estáticos (para CSS y otros recursos)
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 // Funciones middleware para verificar autenticación y roles
 function verificarAutenticacion(req, res, next) {
@@ -61,17 +61,27 @@ app.get('/register', (req, res) => {
 
 // Ruta POST para procesar el registro
 app.post('/register', (req, res) => {
-  const { nombre, email, contraseña } = req.body;
+  const { nombre, email, contraseña, domicilio, dni } = req.body;
   const tipo_usuario = 'cliente'; // Por defecto, los nuevos usuarios son clientes
 
-  bcrypt.hash(contraseña, 10, (err, hash) => {
+  // Verificar que el DNI no esté ya registrado
+  db.query('SELECT * FROM usuarios WHERE dni = ?', [dni], (err, results) => {
     if (err) throw err;
-    db.query('INSERT INTO usuarios (nombre, email, contraseña, tipo_usuario) VALUES (?, ?, ?, ?)',
-      [nombre, email, hash, tipo_usuario],
-      (err, result) => {
+    if (results.length > 0) {
+      res.send('El DNI ya está registrado. Por favor, verifica tus datos.');
+    } else {
+      bcrypt.hash(contraseña, 10, (err, hash) => {
         if (err) throw err;
-        res.redirect('/login');
+        db.query(
+          'INSERT INTO usuarios (nombre, email, contraseña, tipo_usuario, domicilio, dni) VALUES (?, ?, ?, ?, ?, ?)',
+          [nombre, email, hash, tipo_usuario, domicilio, dni],
+          (err, result) => {
+            if (err) throw err;
+            res.redirect('/login');
+          }
+        );
       });
+    }
   });
 });
 
@@ -116,7 +126,12 @@ app.get('/inicio', verificarAutenticacion, (req, res) => {
 
 // Ruta GET para el panel de administración
 app.get('/admin', verificarAdmin, (req, res) => {
-  db.query('SELECT registros.*, usuarios.nombre AS nombre_usuario FROM registros JOIN usuarios ON registros.id_usuario = usuarios.id', (err, registros) => {
+  const query = `
+      SELECT registros.*, usuarios.nombre AS nombre_usuario, usuarios.dni AS dni_usuario
+      FROM registros
+      JOIN usuarios ON registros.id_usuario = usuarios.id
+  `;
+  db.query(query, (err, registros) => {
     if (err) throw err;
     res.render('admin', { usuario: req.session.usuario, registros: registros });
   });
@@ -124,22 +139,28 @@ app.get('/admin', verificarAdmin, (req, res) => {
 
 // Ruta GET para crear un nuevo registro
 app.get('/admin/nuevo-registro', verificarAdmin, (req, res) => {
-  // Obtener la lista de usuarios para seleccionar
-  db.query('SELECT id, nombre FROM usuarios WHERE tipo_usuario = "cliente"', (err, usuarios) => {
-    if (err) throw err;
-    res.render('nuevo-registro', { usuarios: usuarios });
-  });
+  res.render('nuevo-registro');
 });
 
 // Ruta POST para procesar la creación de un nuevo registro
 app.post('/admin/nuevo-registro', verificarAdmin, (req, res) => {
-  const { id_usuario, hora_entrada } = req.body;
-  db.query('INSERT INTO registros (id_usuario, hora_entrada) VALUES (?, ?)',
-    [id_usuario, hora_entrada],
-    (err, result) => {
-      if (err) throw err;
-      res.redirect('/admin');
-    });
+  const { dni, hora_entrada } = req.body;
+
+  // Buscar al usuario por DNI
+  db.query('SELECT id FROM usuarios WHERE dni = ?', [dni], (err, results) => {
+    if (err) throw err;
+    if (results.length > 0) {
+      const id_usuario = results[0].id;
+      db.query('INSERT INTO registros (id_usuario, hora_entrada) VALUES (?, ?)',
+        [id_usuario, hora_entrada],
+        (err, result) => {
+          if (err) throw err;
+          res.redirect('/admin');
+        });
+    } else {
+      res.send('No se encontró un usuario con ese DNI.');
+    }
+  });
 });
 
 // Ruta GET para editar un registro existente
@@ -188,84 +209,94 @@ app.get('/cliente', verificarAutenticacion, (req, res) => {
   }
 });
 
-
 // Ruta GET para mostrar el comprobante al cliente en formato PDF
-const easyinvoice = require('easyinvoice');
+app.get('/cliente/comprobante/:id', verificarAutenticacion, async (req, res) => {
+  const id_registro = req.params.id;
 
+  db.query('SELECT * FROM registros WHERE id = ? AND id_usuario = ?', [id_registro, req.session.usuario.id], (err, results) => {
+    if (err) {
+      console.error('Error al consultar la base de datos:', err);
+      res.status(500).send('Error interno del servidor');
+      return;
+    }
+    if (results.length > 0) {
+      const registro = results[0];
+      if (registro.hora_salida) {
+        const hora_entrada = new Date(registro.hora_entrada);
+        const hora_salida = new Date(registro.hora_salida);
+        const monto = registro.monto;
 
-app.get('/cliente/comprobante/:id', verificarAutenticacion, (req, res) => {
-    const id_registro = req.params.id;
-
-    db.query('SELECT * FROM registros WHERE id = ? AND id_usuario = ?', [id_registro, req.session.usuario.id], async (err, results) => {
-        if (err) {
-            console.error('Error al consultar la base de datos:', err);
+        // Obtener datos del usuario
+        db.query('SELECT nombre, domicilio, dni FROM usuarios WHERE id = ?', [req.session.usuario.id], async (err, usuarios) => {
+          if (err) {
+            console.error('Error al obtener datos del usuario:', err);
             res.status(500).send('Error interno del servidor');
             return;
-        }
-        if (results.length > 0) {
-            const registro = results[0];
-            if (registro.hora_salida) {
-                const hora_entrada = new Date(registro.hora_entrada);
-                const hora_salida = new Date(registro.hora_salida);
-                const monto = registro.monto;
-                const nombre_usuario = req.session.usuario.nombre;
+          }
+          if (usuarios.length > 0) {
+            const usuarioData = usuarios[0];
+            const nombre_usuario = usuarioData.nombre;
+            const domicilio = usuarioData.domicilio;
+            const dni = usuarioData.dni;
 
-                // Preparar los datos para la factura
-                const data = {
-                    "documentTitle": "Comprobante de Pago",
-                    "currency": "ARS",
-                    "taxNotation": "vat", // o "gst"
-                    "marginTop": 25,
-                    "marginRight": 25,
-                    "marginLeft": 25,
-                    "marginBottom": 25,
-                    "logo": "",
-                    "sender": {
-                        "company": "PARKING PLUS",
-                        "address": "Av. San Martín 2458",
-                        "zip": "CP 5500",
-                        "city": "Mendoza - Ciudad",
-                        "country": "Argentina"
-                    },
-                    "client": {
-                        "company": nombre_usuario,
-                        "address": "",
-                        "zip": "",
-                        "city": "Mendoza",
-                        "country": "Argentina"
-                    },
-                    "invoiceNumber": registro.id.toString(),
-                    "invoiceDate": hora_salida.toISOString().split('T')[0],
-                    "products": [
-                        {
-                            "quantity": 1,
-                            "description": "Servicio de Estacionamiento",
-                            "tax": 0,
-                            "price": monto
-                        }
-                    ],
-                    "bottomNotice": "Gracias por utilizar nuestros servicios."
-                };
+            // Preparar los datos para la factura
+            const data = {
+              // ... (datos para easyinvoice)
+            };
 
-                try {
-                    // Generar el PDF
-                    const result = await easyinvoice.createInvoice(data);
-                    // Enviar el PDF al cliente
-                    res.setHeader('Content-Type', 'application/pdf');
-                    res.setHeader('Content-Disposition', `attachment; filename=comprobante_${registro.id}.pdf`);
-                    res.send(Buffer.from(result.pdf, 'base64'));
-                } catch (error) {
-                    console.error('Error al generar el comprobante:', error);
-                    res.status(500).send('Error al generar el comprobante.');
-                }
-            } else {
-                res.send('La salida aún no ha sido registrada para este registro.');
+            try {
+              // Generar el PDF
+              const result = await easyinvoice.createInvoice(data);
+              // Enviar el PDF al cliente
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader('Content-Disposition', `attachment; filename=comprobante_${registro.id}.pdf`);
+              res.send(Buffer.from(result.pdf, 'base64'));
+            } catch (error) {
+              console.error('Error al generar el comprobante:', error);
+              res.status(500).send('Error al generar el comprobante.');
             }
-        } else {
-            res.send('Registro no encontrado.');
-        }
-    });
+          } else {
+            res.send('Usuario no encontrado.');
+          }
+        });
+      } else {
+        res.send('La salida aún no ha sido registrada para este registro.');
+      }
+    } else {
+      res.send('Registro no encontrado.');
+    }
+  });
 });
+
+// Ruta POST para registrar la salida desde el panel de administración
+app.post('/admin/registrar-salida', verificarAdmin, (req, res) => {
+  const { id_registro } = req.body;
+  const hora_salida = new Date();
+
+  db.query('SELECT hora_entrada FROM registros WHERE id = ?', [id_registro], (err, results) => {
+    if (err) throw err;
+    if (results.length > 0) {
+      const hora_entrada = new Date(results[0].hora_entrada);
+      const tiempoEstadia = (hora_salida - hora_entrada) / (1000 * 60 * 60); // Calcula el tiempo en horas
+      const monto = calcularMonto(tiempoEstadia);
+
+      db.query('UPDATE registros SET hora_salida = ?, monto = ? WHERE id = ?',
+        [hora_salida, monto, id_registro],
+        (err, result) => {
+          if (err) throw err;
+          // Opcional: Mostrar el comprobante al administrador
+          res.redirect('/admin');
+        });
+    } else {
+      res.send('Registro no encontrado');
+    }
+  });
+});
+
+function calcularMonto(tiempoEstadia) {
+  const tarifaPorHora = 2000; 
+  return tarifaPorHora * Math.ceil(tiempoEstadia);
+}
 
 // Cerrar sesión
 app.get('/logout', (req, res) => {
@@ -278,38 +309,7 @@ app.listen(3000, () => {
   console.log('Servidor iniciado en el puerto 3000');
 });
 
-
-// Ruta POST para registrar la salida desde el panel de administración
-app.post('/admin/registrar-salida', verificarAdmin, (req, res) => {
-  const { id_registro } = req.body;
-  const hora_salida = new Date();
-
-  db.query('SELECT hora_entrada FROM registros WHERE id = ?', [id_registro], (err, results) => {
-      if (err) throw err;
-      if (results.length > 0) {
-          const hora_entrada = new Date(results[0].hora_entrada);
-          const tiempoEstadia = (hora_salida - hora_entrada) / (1000 * 60 * 60); // Calcula el tiempo en horas
-          const monto = calcularMonto(tiempoEstadia);
-
-          db.query('UPDATE registros SET hora_salida = ?, monto = ? WHERE id = ?',
-              [hora_salida, monto, id_registro],
-              (err, result) => {
-                  if (err) throw err;
-                  // Opcional: Mostrar el comprobante al administrador
-                  res.redirect('/admin');
-              });
-      } else {
-          res.send('Registro no encontrado');
-      }
-  });
-});
-
-function calcularMonto(tiempoEstadia) {
-  const tarifaPorHora = 2000; 
-  return tarifaPorHora * Math.ceil(tiempoEstadia);
-}
-
-
+// Middleware para registrar las peticiones (opcional)
 app.use((req, res, next) => {
   console.log(`Petición: ${req.method} ${req.url}`);
   next();
