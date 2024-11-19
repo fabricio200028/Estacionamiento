@@ -209,64 +209,100 @@ app.get('/cliente', verificarAutenticacion, (req, res) => {
   }
 });
 
+const { promisify } = require('util');
+
+// Convertir db.query a promesa
+const query = promisify(db.query).bind(db);
+
 // Ruta GET para mostrar el comprobante al cliente en formato PDF
 app.get('/cliente/comprobante/:id', verificarAutenticacion, async (req, res) => {
-  const id_registro = req.params.id;
+    const id_registro = req.params.id;
 
-  db.query('SELECT * FROM registros WHERE id = ? AND id_usuario = ?', [id_registro, req.session.usuario.id], (err, results) => {
-    if (err) {
-      console.error('Error al consultar la base de datos:', err);
-      res.status(500).send('Error interno del servidor');
-      return;
-    }
-    if (results.length > 0) {
-      const registro = results[0];
-      if (registro.hora_salida) {
-        const hora_entrada = new Date(registro.hora_entrada);
-        const hora_salida = new Date(registro.hora_salida);
-        const monto = registro.monto;
+    try {
+        // Obtener el registro del usuario actual
+        const registros = await query('SELECT * FROM registros WHERE id = ? AND id_usuario = ?', [id_registro, req.session.usuario.id]);
 
-        // Obtener datos del usuario
-        db.query('SELECT nombre, domicilio, dni FROM usuarios WHERE id = ?', [req.session.usuario.id], async (err, usuarios) => {
-          if (err) {
-            console.error('Error al obtener datos del usuario:', err);
-            res.status(500).send('Error interno del servidor');
-            return;
-          }
-          if (usuarios.length > 0) {
-            const usuarioData = usuarios[0];
-            const nombre_usuario = usuarioData.nombre;
-            const domicilio = usuarioData.domicilio;
-            const dni = usuarioData.dni;
+        if (registros.length > 0) {
+            const registro = registros[0];
 
-            // Preparar los datos para la factura
-            const data = {
-              // ... (datos para easyinvoice)
-            };
+            if (registro.hora_salida) {
+                const hora_entrada = new Date(registro.hora_entrada);
+                const hora_salida = new Date(registro.hora_salida);
+                const monto = registro.monto;
 
-            try {
-              // Generar el PDF
-              const result = await easyinvoice.createInvoice(data);
-              // Enviar el PDF al cliente
-              res.setHeader('Content-Type', 'application/pdf');
-              res.setHeader('Content-Disposition', `attachment; filename=comprobante_${registro.id}.pdf`);
-              res.send(Buffer.from(result.pdf, 'base64'));
-            } catch (error) {
-              console.error('Error al generar el comprobante:', error);
-              res.status(500).send('Error al generar el comprobante.');
+                // Obtener datos del usuario
+                const usuarios = await query('SELECT nombre, domicilio, dni FROM usuarios WHERE id = ?', [req.session.usuario.id]);
+
+                if (usuarios.length > 0) {
+                    const usuarioData = usuarios[0];
+                    const nombre_usuario = usuarioData.nombre;
+                    const domicilio = usuarioData.domicilio;
+                    const dni = usuarioData.dni;
+
+                    // Preparar los datos para la factura
+                    const data = {
+                        "documentTitle": "Comprobante de Pago",
+                        "currency": "ARS",
+                        "taxNotation": "vat",
+                        "marginTop": 25,
+                        "marginRight": 25,
+                        "marginLeft": 25,
+                        "marginBottom": 25,
+                        "logo": "", // Si tienes un logo, puedes agregar la URL aquí
+                        "sender": {
+                            "company": "PARKING PLUS",
+                            "address": "Av. San Martín 2458",
+                            "zip": "CP 5500",
+                            "city": "Mendoza - Ciudad",
+                            "country": "Argentina"
+                        },
+                        "client": {
+                            "company": nombre_usuario,
+                            "address": domicilio,
+                            "zip": "",
+                            "city": "Mendoza - Argentina",
+                            "country": "",
+                            "custom1": `DNI: ${dni}`
+                        },
+                        "invoiceNumber": registro.id.toString(),
+                        "invoiceDate": hora_salida.toISOString().split('T')[0],
+                        "products": [
+                            {
+                                "quantity": 1,
+                                "description": "Servicio de Estacionamiento",
+                                "tax": 0,
+                                "price": monto
+                            }
+                        ],
+                        "bottomNotice": "Gracias por utilizar nuestros servicios."
+                    };
+
+                    try {
+                        // Generar el PDF
+                        const result = await easyinvoice.createInvoice(data);
+                        // Enviar el PDF al cliente
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-Disposition', `attachment; filename=comprobante_${registro.id}.pdf`);
+                        res.send(Buffer.from(result.pdf, 'base64'));
+                    } catch (error) {
+                        console.error('Error al generar el comprobante:', error);
+                        res.status(500).send('Error al generar el comprobante.');
+                    }
+                } else {
+                    res.send('Usuario no encontrado.');
+                }
+            } else {
+                res.send('La salida aún no ha sido registrada para este registro.');
             }
-          } else {
-            res.send('Usuario no encontrado.');
-          }
-        });
-      } else {
-        res.send('La salida aún no ha sido registrada para este registro.');
-      }
-    } else {
-      res.send('Registro no encontrado.');
+        } else {
+            res.send('Registro no encontrado.');
+        }
+    } catch (error) {
+        console.error('Error al generar el comprobante:', error);
+        res.status(500).send('Error interno del servidor.');
     }
-  });
 });
+
 
 // Ruta POST para registrar la salida desde el panel de administración
 app.post('/admin/registrar-salida', verificarAdmin, (req, res) => {
