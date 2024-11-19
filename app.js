@@ -36,6 +36,7 @@ app.set('views', path.join(__dirname, 'views'));
 // Servir archivos estáticos (para CSS y otros recursos)
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 // Funciones middleware para verificar autenticación y roles
 function verificarAutenticacion(req, res, next) {
   if (req.session.loggedin) {
@@ -309,3 +310,7 @@ function calcularMonto(tiempoEstadia) {
 }
 
 
+app.use((req, res, next) => {
+  console.log(`Petición: ${req.method} ${req.url}`);
+  next();
+});
